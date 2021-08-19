@@ -1,10 +1,11 @@
 package module
 
 import (
-	"github.com/Cyinx/einx/agent"
-	"github.com/Cyinx/einx/event"
-	"github.com/Cyinx/einx/timer"
 	"sync"
+
+	"github.com/jslyzt/einx/agent"
+	"github.com/jslyzt/einx/event"
+	"github.com/jslyzt/einx/timer"
 )
 
 //var module_map map[string]Module = make(map[string]Module)

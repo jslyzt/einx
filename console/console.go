@@ -2,10 +2,11 @@ package console
 
 import (
 	"bufio"
-	"github.com/Cyinx/einx/module"
-	"github.com/Cyinx/einx/slog"
 	"os"
 	"strings"
+
+	"github.com/jslyzt/einx/module"
+	"github.com/jslyzt/einx/slog"
 )
 
 var reader = bufio.NewReader(os.Stdin)

@@ -2,11 +2,12 @@ package mysql
 
 import (
 	"database/sql"
-	"github.com/Cyinx/einx/component"
-	"github.com/Cyinx/einx/event"
-	"github.com/Cyinx/einx/module"
-	"github.com/Cyinx/einx/slog"
 	"time"
+
+	"github.com/jslyzt/einx/component"
+	"github.com/jslyzt/einx/event"
+	"github.com/jslyzt/einx/module"
+	"github.com/jslyzt/einx/slog"
 )
 
 type EventReceiver = event.EventReceiver

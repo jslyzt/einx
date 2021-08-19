@@ -1,7 +1,7 @@
 package context
 
 import (
-	"github.com/Cyinx/einx/timer"
+	"github.com/jslyzt/einx/timer"
 )
 
 type TimerHandler = timer.TimerHandler

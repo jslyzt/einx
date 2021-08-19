@@ -24,19 +24,19 @@ a example server for einx (https://github.com/Cyinx/game_server_einx)
 
 ### Brief
 
-* [Agent](https://github.com/Cyinx/einx/tree/master/agent) - Basic Interface
-* [Module](https://github.com/Cyinx/einx/tree/master/module) - Service worker
-* [Network](https://github.com/Cyinx/einx/tree/master/network) - Network Unit for Module.Implement of Component.
-* [Timer](https://github.com/Cyinx/einx/tree/master/timer) - Timer wheel.
+* [Agent](https://github.com/jslyzt/einx/tree/master/agent) - Basic Interface
+* [Module](https://github.com/jslyzt/einx/tree/master/module) - Service worker
+* [Network](https://github.com/jslyzt/einx/tree/master/network) - Network Unit for Module.Implement of Component.
+* [Timer](https://github.com/jslyzt/einx/tree/master/timer) - Timer wheel.
 
 ### Document and Example
 
-* [Guide Document](https://github.com/Cyinx/einx/wiki)
+* [Guide Document](https://github.com/jslyzt/einx/wiki)
 * [example for reference.](https://github.com/Cyinx/game_server_einx)
 
 ### License
-* einx is licensed under the [Apache License 2.0](https://github.com/Cyinx/einx/blob/master/LICENSE).
+* einx is licensed under the [Apache License 2.0](https://github.com/jslyzt/einx/blob/master/LICENSE).
 
 ### buy me a coffee
-![wx](https://github.com/Cyinx/einx/raw/master/screenshots/wx.jpg)
-![ali](https://github.com/Cyinx/einx/raw/master/screenshots/ali.png)
+![wx](https://github.com/jslyzt/einx/raw/master/screenshots/wx.jpg)
+![ali](https://github.com/jslyzt/einx/raw/master/screenshots/ali.png)

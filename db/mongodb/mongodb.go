@@ -1,13 +1,14 @@
 package mongodb
 
 import (
-	"github.com/Cyinx/einx/component"
-	"github.com/Cyinx/einx/event"
-	"github.com/Cyinx/einx/module"
-	"github.com/Cyinx/einx/slog"
+	"time"
+
+	"github.com/jslyzt/einx/component"
+	"github.com/jslyzt/einx/event"
+	"github.com/jslyzt/einx/module"
+	"github.com/jslyzt/einx/slog"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"time"
 )
 
 type M = bson.M

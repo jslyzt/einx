@@ -2,8 +2,9 @@ package network
 
 import (
 	"fmt"
-	"github.com/Cyinx/einx/slog"
 	"math"
+
+	"github.com/jslyzt/einx/slog"
 )
 
 func RpcMarshal(b []byte, val interface{}) []byte {

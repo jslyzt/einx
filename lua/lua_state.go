@@ -2,19 +2,22 @@ package lua_state
 
 import (
 	"fmt"
-	"github.com/Cyinx/einx/slog"
-	"github.com/yuin/gopher-lua"
 	"math"
+
+	"github.com/jslyzt/einx/slog"
+	lua "github.com/jslyzt/glua"
 )
 
-type LState = lua.LState
-type LValue = lua.LValue
-type LTable = lua.LTable
-type LNumber = lua.LNumber
+type (
+	LState  = lua.LState
+	LValue  = lua.LValue
+	LTable  = lua.LTable
+	LNumber = lua.LNumber
 
-type LuaRuntime struct {
-	lua *lua.LState
-}
+	LuaRuntime struct {
+		lua *lua.LState
+	}
+)
 
 func (this *LuaRuntime) GetVm() *LState {
 	return this.lua

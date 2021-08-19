@@ -1,7 +1,7 @@
 package queue
 
 import (
-	//"github.com/Cyinx/einx/slog"
+	//"github.com/jslyzt/einx/slog"
 	"sync"
 	"sync/atomic"
 )

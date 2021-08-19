@@ -1,8 +1,8 @@
 package context
 
 import (
-	"github.com/Cyinx/einx/agent"
-	"github.com/Cyinx/einx/component"
+	"github.com/jslyzt/einx/agent"
+	"github.com/jslyzt/einx/component"
 )
 
 type Agent = agent.Agent

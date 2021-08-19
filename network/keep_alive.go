@@ -1,12 +1,13 @@
 package network
 
 import (
-	"github.com/Cyinx/einx/event"
-	"github.com/Cyinx/einx/slog"
-	"github.com/Cyinx/einx/timer"
 	"runtime/debug"
 	"sync"
 	"time"
+
+	"github.com/jslyzt/einx/event"
+	"github.com/jslyzt/einx/slog"
+	"github.com/jslyzt/einx/timer"
 )
 
 type EventQueue = event.EventQueue

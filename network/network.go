@@ -1,10 +1,11 @@
 package network
 
 import (
-	"github.com/Cyinx/einx/agent"
-	"github.com/Cyinx/einx/component"
-	"github.com/Cyinx/einx/event"
 	"net"
+
+	"github.com/jslyzt/einx/agent"
+	"github.com/jslyzt/einx/component"
+	"github.com/jslyzt/einx/event"
 )
 
 type Agent = agent.Agent

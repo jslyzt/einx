@@ -1,14 +1,16 @@
 package einx
 
 import (
-	"github.com/Cyinx/einx/console"
-	"github.com/Cyinx/einx/event"
-	"github.com/Cyinx/einx/lua"
-	"github.com/Cyinx/einx/module"
-	"github.com/Cyinx/einx/network"
-	"github.com/Cyinx/einx/slog"
 	"os"
 	"os/signal"
+	"syscall"
+
+	"github.com/jslyzt/einx/console"
+	"github.com/jslyzt/einx/event"
+	lua_state "github.com/jslyzt/einx/lua"
+	"github.com/jslyzt/einx/module"
+	"github.com/jslyzt/einx/network"
+	"github.com/jslyzt/einx/slog"
 )
 
 var _einxDefault = &einx{
@@ -27,7 +29,7 @@ func Run() {
 	network.Run()
 	module.Start()
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, os.Kill)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	sig := <-c
 	slog.LogWarning("einx", "einx will close down (signal: %v)", sig)
 	_einxDefault.doClose()

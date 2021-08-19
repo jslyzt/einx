@@ -1,8 +1,9 @@
 package event
 
 import (
-	"github.com/Cyinx/einx/queue"
 	"sync/atomic"
+
+	"github.com/jslyzt/einx/queue"
 )
 
 type EventChan chan bool

@@ -1,11 +1,12 @@
 package network
 
 import (
-	"github.com/Cyinx/einx/event"
-	"github.com/Cyinx/einx/slog"
 	"net"
 	"sync/atomic"
 	"time"
+
+	"github.com/jslyzt/einx/event"
+	"github.com/jslyzt/einx/slog"
 )
 
 const TCP_ACCEPT_SLEEP = 150

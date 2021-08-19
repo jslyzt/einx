@@ -2,9 +2,10 @@ package module
 
 import (
 	"fmt"
-	"github.com/Cyinx/einx/slog"
 	"sync"
 	"sync/atomic"
+
+	"github.com/jslyzt/einx/slog"
 )
 
 var worker_pools_map sync.Map

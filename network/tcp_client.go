@@ -1,9 +1,10 @@
 package network
 
 import (
-	"github.com/Cyinx/einx/event"
-	"github.com/Cyinx/einx/slog"
 	"net"
+
+	"github.com/jslyzt/einx/event"
+	"github.com/jslyzt/einx/slog"
 )
 
 type TcpClientMgr struct {

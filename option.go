@@ -1,10 +1,10 @@
 package einx
 
 import (
-	"github.com/Cyinx/einx/event"
-	"github.com/Cyinx/einx/module"
-	"github.com/Cyinx/einx/network"
-	"github.com/Cyinx/einx/slog"
+	"github.com/jslyzt/einx/event"
+	"github.com/jslyzt/einx/module"
+	"github.com/jslyzt/einx/network"
+	"github.com/jslyzt/einx/slog"
 )
 
 type Option = func(...interface{})

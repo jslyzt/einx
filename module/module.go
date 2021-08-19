@@ -6,13 +6,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Cyinx/einx/agent"
-	"github.com/Cyinx/einx/component"
-	"github.com/Cyinx/einx/context"
-	"github.com/Cyinx/einx/event"
-	"github.com/Cyinx/einx/network"
-	"github.com/Cyinx/einx/slog"
-	"github.com/Cyinx/einx/timer"
+	"github.com/jslyzt/einx/agent"
+	"github.com/jslyzt/einx/component"
+	"github.com/jslyzt/einx/context"
+	"github.com/jslyzt/einx/event"
+	"github.com/jslyzt/einx/network"
+	"github.com/jslyzt/einx/slog"
+	"github.com/jslyzt/einx/timer"
 )
 
 type Agent = agent.Agent

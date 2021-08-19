@@ -2,13 +2,14 @@ package network
 
 import (
 	"errors"
-	"github.com/Cyinx/einx/agent"
-	"github.com/Cyinx/einx/queue"
-	"github.com/Cyinx/einx/slog"
 	"net"
 	"runtime/debug"
 	"sync"
 	"sync/atomic"
+
+	"github.com/jslyzt/einx/agent"
+	"github.com/jslyzt/einx/queue"
+	"github.com/jslyzt/einx/slog"
 )
 
 type TcpConn struct {

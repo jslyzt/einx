@@ -1,7 +1,7 @@
 package component
 
 import (
-	"github.com/Cyinx/einx/agent"
+	"github.com/jslyzt/einx/agent"
 )
 
 type Agent = agent.Agent

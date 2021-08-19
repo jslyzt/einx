@@ -1,10 +1,11 @@
 package lua_state
 
 import (
-	"github.com/Cyinx/einx/slog"
-	"github.com/yuin/gopher-lua"
 	"strings"
 	"time"
+
+	"github.com/jslyzt/einx/slog"
+	lua "github.com/jslyzt/glua"
 )
 
 var start_tick time.Time
