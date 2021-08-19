@@ -27,7 +27,7 @@ func init() {
 const LogBufferLength = 65535
 
 func (l Level) String() string {
-	if l < 0 || uint32(l) > uint32(len(levelStrings)) {
+	if uint32(l) > uint32(len(levelStrings)) {
 		return "UNKNOWN"
 	}
 	return levelStrings[int(l)]
@@ -43,9 +43,9 @@ type LogRecord struct {
 	Message string
 }
 
-func (this *LogRecord) Reset() {
-	this.Name = ""
-	this.Message = ""
+func (log *LogRecord) Reset() {
+	log.Name = ""
+	log.Message = ""
 }
 
 var LOG_LEVEL Level = DEBUG

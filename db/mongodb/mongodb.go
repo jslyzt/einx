@@ -11,8 +11,10 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-type M = bson.M
-type EventReceiver = event.EventReceiver
+type (
+	M             = bson.M
+	EventReceiver = event.EventReceiver
+)
 
 const (
 	Strong    = 1
@@ -37,57 +39,56 @@ func NewMongoDBMgr(m module.Module, dbcfg *MongoDBInfo, timeout time.Duration) *
 	}
 }
 
-func (this *MongoDBMgr) GetID() component.ComponentID {
-	return this.component_id
+func (mgr *MongoDBMgr) GetID() component.ComponentID {
+	return mgr.component_id
 }
 
-func (this *MongoDBMgr) GetType() component.ComponentType {
+func (mgr *MongoDBMgr) GetType() component.ComponentType {
 	return component.COMPONENT_TYPE_DB_MONGODB
 }
 
-func (this *MongoDBMgr) Start() bool {
+func (mgr *MongoDBMgr) Start() bool {
 	var err error
-	this.session, err = mgo.DialWithTimeout(this.dbcfg.String(), this.timeout)
+	mgr.session, err = mgo.DialWithTimeout(mgr.dbcfg.String(), mgr.timeout)
 	if err != nil {
 		e := &event.ComponentEventMsg{}
 		e.MsgType = event.EVENT_COMPONENT_ERROR
-		e.Sender = this
+		e.Sender = mgr
 		e.Attach = err
-		this.m.PushEventMsg(e)
+		mgr.m.PushEventMsg(e)
 		slog.LogInfo("mongodb", "MongoDB Connect failed.")
 		return false
 	}
 
-	this.session.SetMode(mgo.Monotonic, true)
+	mgr.session.SetMode(mgo.Monotonic, true)
 	return true
 }
 
-func (this *MongoDBMgr) Close() {
-	if this.session != nil {
-		this.session.DB("").Logout()
-		this.session.Close()
-		this.session = nil
-		slog.LogInfo("mongodb", "Disconnect mongodb url: ", this.dbcfg.String())
+func (mgr *MongoDBMgr) Close() {
+	if mgr.session != nil {
+		mgr.session.DB("").Logout()
+		mgr.session.Close()
+		mgr.session = nil
+		slog.LogInfo("mongodb", "Disconnect mongodb url: ", mgr.dbcfg.String())
 	}
 }
 
-func (this *MongoDBMgr) Ping() error {
-	if this.session != nil {
-		return this.session.Ping()
+func (mgr *MongoDBMgr) Ping() error {
+	if mgr.session != nil {
+		return mgr.session.Ping()
 	}
-	return MONGODB_SESSION_NIL_ERR
+	return ErrSessionNil
 }
 
-func (this *MongoDBMgr) RefreshSession() {
-	this.session.Refresh()
-
+func (mgr *MongoDBMgr) RefreshSession() {
+	mgr.session.Refresh()
 }
 
-func (db *MongoDBMgr) GetDbSession() *mgo.Session {
-	return db.session
+func (mgr *MongoDBMgr) GetDbSession() *mgo.Session {
+	return mgr.session
 }
 
-func (this *MongoDBMgr) SetMode(mode int, refresh bool) {
+func (mgr *MongoDBMgr) SetMode(mode int, refresh bool) {
 	status := mgo.Monotonic
 	if mode == Strong {
 		status = mgo.Strong
@@ -95,15 +96,15 @@ func (this *MongoDBMgr) SetMode(mode int, refresh bool) {
 		status = mgo.Monotonic
 	}
 
-	this.session.SetMode(status, refresh)
+	mgr.session.SetMode(status, refresh)
 }
 
-func (this *MongoDBMgr) Insert(collection string, doc interface{}) error {
-	if this.session == nil {
-		return MONGODB_SESSION_NIL_ERR
+func (mgr *MongoDBMgr) Insert(collection string, doc interface{}) error {
+	if mgr.session == nil {
+		return ErrSessionNil
 	}
 
-	db_session := this.session.Copy()
+	db_session := mgr.session.Copy()
 	defer db_session.Close()
 
 	c := db_session.DB("").C(collection)
@@ -111,12 +112,12 @@ func (this *MongoDBMgr) Insert(collection string, doc interface{}) error {
 	return c.Insert(doc)
 }
 
-func (this *MongoDBMgr) Update(collection string, cond interface{}, change interface{}) error {
-	if this.session == nil {
-		return MONGODB_SESSION_NIL_ERR
+func (mgr *MongoDBMgr) Update(collection string, cond interface{}, change interface{}) error {
+	if mgr.session == nil {
+		return ErrSessionNil
 	}
 
-	db_session := this.session.Copy()
+	db_session := mgr.session.Copy()
 	defer db_session.Close()
 
 	c := db_session.DB("").C(collection)
@@ -124,12 +125,12 @@ func (this *MongoDBMgr) Update(collection string, cond interface{}, change inter
 	return c.Update(cond, bson.M{"$set": change})
 }
 
-func (this *MongoDBMgr) UpdateInsert(collection string, cond interface{}, doc interface{}) error {
-	if this.session == nil {
-		return MONGODB_SESSION_NIL_ERR
+func (mgr *MongoDBMgr) UpdateInsert(collection string, cond interface{}, doc interface{}) error {
+	if mgr.session == nil {
+		return ErrSessionNil
 	}
 
-	db_session := this.session.Copy()
+	db_session := mgr.session.Copy()
 	defer db_session.Close()
 
 	c := db_session.DB("").C(collection)
@@ -141,12 +142,12 @@ func (this *MongoDBMgr) UpdateInsert(collection string, cond interface{}, doc in
 	return err
 }
 
-func (this *MongoDBMgr) RemoveOne(collection string, cond_name string, cond_value int64) error {
-	if this.session == nil {
-		return MONGODB_SESSION_NIL_ERR
+func (mgr *MongoDBMgr) RemoveOne(collection string, cond_name string, cond_value int64) error {
+	if mgr.session == nil {
+		return ErrSessionNil
 	}
 
-	db_session := this.session.Copy()
+	db_session := mgr.session.Copy()
 	defer db_session.Close()
 
 	c := db_session.DB("").C(collection)
@@ -156,15 +157,14 @@ func (this *MongoDBMgr) RemoveOne(collection string, cond_name string, cond_valu
 	}
 
 	return err
-
 }
 
-func (this *MongoDBMgr) RemoveOneByCond(collection string, cond interface{}) error {
-	if this.session == nil {
-		return MONGODB_SESSION_NIL_ERR
+func (mgr *MongoDBMgr) RemoveOneByCond(collection string, cond interface{}) error {
+	if mgr.session == nil {
+		return ErrSessionNil
 	}
 
-	db_session := this.session.Copy()
+	db_session := mgr.session.Copy()
 	defer db_session.Close()
 
 	c := db_session.DB("").C(collection)
@@ -175,15 +175,14 @@ func (this *MongoDBMgr) RemoveOneByCond(collection string, cond interface{}) err
 	}
 
 	return err
-
 }
 
-func (this *MongoDBMgr) RemoveAll(collection string, cond interface{}) error {
-	if this.session == nil {
-		return MONGODB_SESSION_NIL_ERR
+func (mgr *MongoDBMgr) RemoveAll(collection string, cond interface{}) error {
+	if mgr.session == nil {
+		return ErrSessionNil
 	}
 
-	db_session := this.session.Copy()
+	db_session := mgr.session.Copy()
 	defer db_session.Close()
 
 	c := db_session.DB("").C(collection)
@@ -196,38 +195,38 @@ func (this *MongoDBMgr) RemoveAll(collection string, cond interface{}) error {
 	return nil
 }
 
-func (this *MongoDBMgr) DBQuery(collection string, cond interface{}, result *[]map[string]interface{}) error {
-	if this.session == nil {
-		return MONGODB_SESSION_NIL_ERR
+func (mgr *MongoDBMgr) DBQuery(collection string, cond interface{}, result *[]map[string]interface{}) error {
+	if mgr.session == nil {
+		return ErrSessionNil
 	}
 
-	db_session := this.session.Copy()
+	db_session := mgr.session.Copy()
 	defer db_session.Close()
 
 	c := db_session.DB("").C(collection)
 	q := c.Find(cond)
 
 	if nil == q {
-		return MONGODB_DBFINDALL_ERR
+		return ErrDbFindAll
 	}
 
 	q.All(result)
 	return nil
 }
 
-func (this *MongoDBMgr) DBQueryOneResult(collection string, cond interface{}, result map[string]interface{}) error {
-	if this.session == nil {
-		return MONGODB_SESSION_NIL_ERR
+func (mgr *MongoDBMgr) DBQueryOneResult(collection string, cond interface{}, result map[string]interface{}) error {
+	if mgr.session == nil {
+		return ErrSessionNil
 	}
 
-	db_session := this.session.Copy()
+	db_session := mgr.session.Copy()
 	defer db_session.Close()
 
 	c := db_session.DB("").C(collection)
 	q := c.Find(cond)
 
 	if nil == q {
-		return MONGODB_DBFINDALL_ERR
+		return ErrDbFindAll
 	}
 
 	q.One(result)

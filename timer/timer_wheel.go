@@ -37,65 +37,65 @@ func newTimerWheel(ms_unit uint64, bit_size uint32, now uint64, p *timerPool) *t
 	return timer_wheel
 }
 
-func (this *timerWheel) tickIdxDelta(runTick uint64) uint8 {
-	idxDelta := runTick - this.baseTick
-	idxDelta = idxDelta >> this.bitSize
+func (tw *timerWheel) tickIdxDelta(runTick uint64) uint8 {
+	idxDelta := runTick - tw.baseTick
+	idxDelta = idxDelta >> tw.bitSize
 	return uint8(idxDelta)
 }
 
-func (this *timerWheel) add_timer(timer *xtimer) {
-	if this.prev_wheel != nil && timer.runTick < this.baseTick {
-		this.prev_wheel.add_timer(timer)
+func (tw *timerWheel) add_timer(timer *xtimer) {
+	if tw.prev_wheel != nil && timer.runTick < tw.baseTick {
+		tw.prev_wheel.add_timer(timer)
 		return
 	}
 
-	idx := uint8(this.index + this.tickIdxDelta(timer.runTick))
-	timer_list := this.array[idx]
+	idx := uint8(tw.index + tw.tickIdxDelta(timer.runTick))
+	timer_list := tw.array[idx]
 	timer_list.addTimer(timer)
-	this.timerCount++
+	tw.timerCount++
 }
 
-func (this *timerWheel) delete_timer(run_tick uint64, seq_id uint32) bool {
-	if this.prev_wheel != nil && run_tick < this.baseTick {
-		return this.prev_wheel.delete_timer(run_tick, seq_id)
+func (tw *timerWheel) delete_timer(run_tick uint64, seq_id uint32) bool {
+	if tw.prev_wheel != nil && run_tick < tw.baseTick {
+		return tw.prev_wheel.delete_timer(run_tick, seq_id)
 	}
-	idx := (this.index + uint8(this.tickIdxDelta(run_tick)))
-	timer_list := this.array[idx]
+	idx := (tw.index + uint8(tw.tickIdxDelta(run_tick)))
+	timer_list := tw.array[idx]
 	success := timer_list.deleteTimer(seq_id)
-	this.timerCount--
+	tw.timerCount--
 	return success
 }
 
-func (this *timerWheel) execute(now uint64, count uint32) uint32 {
-	if this.prev_wheel != nil || now < this.baseTick {
+func (tw *timerWheel) execute(now uint64, count uint32) uint32 {
+	if tw.prev_wheel != nil || now < tw.baseTick {
 		return 0
 	}
 
-	elapsedTime := uint64(now - this.baseTick)
+	elapsedTime := uint64(now - tw.baseTick)
 	loopTimes := uint64(1 + elapsedTime)
 
 	var run_count uint32 = 0
 	for ; run_count < count && loopTimes > 0; loopTimes-- {
-		timer_list := this.array[this.index]
+		timer_list := tw.array[tw.index]
 		c, b := timer_list.execute(now, count-run_count)
 		run_count = run_count + c
-		if b == false {
+		if !b {
 			return run_count
 		}
-		this.index++
-		this.baseTick += this.msUnit
-		if this.index == 0 {
-			this.next_wheel.TurnWheel()
+		tw.index++
+		tw.baseTick += tw.msUnit
+		if tw.index == 0 {
+			tw.next_wheel.TurnWheel()
 		}
 	}
 	return run_count
 }
 
-func (this *timerWheel) nextWake() int {
+func (tw *timerWheel) nextWake() int {
 	wakeDelay := 0
-	wakeIndex := this.index
+	wakeIndex := tw.index
 	for wakeDelay < 64 {
-		timer_list := this.array[wakeIndex]
+		timer_list := tw.array[wakeIndex]
 		if timer_list.head != nil {
 			break
 		}
@@ -107,29 +107,29 @@ func (this *timerWheel) nextWake() int {
 	return wakeDelay
 }
 
-func (this *timerWheel) TurnWheel() {
-	if this.prev_wheel == nil {
+func (tw *timerWheel) TurnWheel() {
+	if tw.prev_wheel == nil {
 		return
 	}
 
-	timer_list := this.array[this.index]
+	timer_list := tw.array[tw.index]
 	head_timer := timer_list.head
 	var next_timer *xtimer = nil
 	for head_timer != nil {
 		next_timer = head_timer.next
 		head_timer.next = nil
-		this.prev_wheel.add_timer(head_timer)
+		tw.prev_wheel.add_timer(head_timer)
 		head_timer = next_timer
-		this.timerCount--
+		tw.timerCount--
 	}
 
 	timer_list.head = nil
 	timer_list.tail = nil
 
-	this.index++
-	this.baseTick += this.msUnit
+	tw.index++
+	tw.baseTick += tw.msUnit
 
-	if this.index == 0 && this.next_wheel != nil {
-		this.next_wheel.TurnWheel()
+	if tw.index == 0 && tw.next_wheel != nil {
+		tw.next_wheel.TurnWheel()
 	}
 }

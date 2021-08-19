@@ -41,7 +41,7 @@ func (c *ModuleContext) Store(k int, v interface{}) {
 
 func (c *ModuleContext) Get(k int) interface{} {
 	v, ok := c.v[k]
-	if ok == true {
+	if ok {
 		return v
 	}
 	return nil
@@ -58,7 +58,7 @@ type ArgsVar struct {
 	args []interface{}
 }
 
-func (s *ArgsVar) init() {
+func (s *ArgsVar) Init() {
 	s.args = make([]interface{}, 0, 4)
 }
 
@@ -70,7 +70,7 @@ func (s *ArgsVar) clear() {
 	s.args = nil
 }
 
-func (s *ArgsVar) addParam(i interface{}) {
+func (s *ArgsVar) AddParam(i interface{}) {
 	s.args = append(s.args, i)
 }
 

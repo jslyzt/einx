@@ -4,17 +4,19 @@ import (
 	"github.com/jslyzt/einx/agent"
 )
 
-type Agent = agent.Agent
-type ComponentID = agent.AgentID
-type ComponentType uint16
-type EventType = int
+type (
+	Agent         = agent.Agent
+	ComponentID   = agent.AgentID
+	ComponentType uint16
+	EventType     = int
 
-type Component interface {
-	GetID() ComponentID
-	GetType() ComponentType
-	Start() bool
-	Close()
-}
+	Component interface {
+		GetID() ComponentID
+		GetType() ComponentType
+		Start() bool
+		Close()
+	}
+)
 
 func GenComponentID() ComponentID {
 	return agent.GenAgentID()

@@ -5,12 +5,14 @@ import (
 	"fmt"
 )
 
+// 错误定义
 var (
-	MONGODB_SESSION_NIL_ERR = errors.New("MongoDBMgr session nil.")
-	MONGODB_NOTFOUND_ERR    = errors.New("not found!")
-	MONGODB_DBFINDALL_ERR   = errors.New("MongoDBMgr found error")
+	ErrSessionNil = errors.New("MongoDBMgr session nil")
+	ErrNotFound   = errors.New("not found")
+	ErrDbFindAll  = errors.New("MongoDBMgr found error")
 )
 
+// MongoDBInfo mongo db info
 type MongoDBInfo struct {
 	DbHost string
 	DbPort int
@@ -19,6 +21,7 @@ type MongoDBInfo struct {
 	DbPass string
 }
 
+// NewMongoDBInfo new func
 func NewMongoDBInfo(host string, port int, name, user, pass string) *MongoDBInfo {
 	return &MongoDBInfo{
 		DbHost: host,
@@ -29,11 +32,12 @@ func NewMongoDBInfo(host string, port int, name, user, pass string) *MongoDBInfo
 	}
 }
 
-func (this *MongoDBInfo) String() string {
+// String 字符串
+func (mgr *MongoDBInfo) String() string {
 	url := fmt.Sprintf("mongodb://%s:%s@%s:%d/%s",
-		this.DbUser, this.DbPass, this.DbHost, this.DbPort, this.DbName)
-	if this.DbUser == "" || this.DbPass == "" {
-		url = fmt.Sprintf("mongodb://%s:%d/%s", this.DbHost, this.DbPort, this.DbName)
+		mgr.DbUser, mgr.DbPass, mgr.DbHost, mgr.DbPort, mgr.DbName)
+	if mgr.DbUser == "" || mgr.DbPass == "" {
+		url = fmt.Sprintf("mongodb://%s:%d/%s", mgr.DbHost, mgr.DbPort, mgr.DbName)
 	}
 	return url
 }

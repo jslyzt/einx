@@ -95,7 +95,6 @@ func (q *Queue) push(data interface{}) {
 		q.end = n
 	}
 	q.c++
-	return
 }
 
 func (q *Queue) pop() (interface{}, bool) {
@@ -119,8 +118,5 @@ func (q *Queue) count() int {
 }
 
 func (q *Queue) empty() bool {
-	if q.head == nil {
-		return true
-	}
-	return false
+	return q.head == nil
 }

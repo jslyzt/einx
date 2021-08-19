@@ -19,9 +19,10 @@ type (
 	}
 )
 
-func (this *LuaRuntime) GetVm() *LState {
-	return this.lua
+func (rtm *LuaRuntime) GetVm() *LState {
+	return rtm.lua
 }
+
 func NewLuaStae() *LuaRuntime {
 	vm := lua.NewState(lua.Options{
 		CallStackSize:       4096,
@@ -55,8 +56,8 @@ func NewLuaStae() *LuaRuntime {
 	return runtime
 }
 
-func (this *LuaRuntime) DoFile(path string) {
-	if err := this.lua.DoFile(path); err != nil {
+func (rtm *LuaRuntime) DoFile(path string) {
+	if err := rtm.lua.DoFile(path); err != nil {
 		slog.LogError("lua", "lua dofile error:%v", err)
 	}
 }
@@ -157,8 +158,8 @@ func ConvertLuaValue(lv lua.LValue) interface{} {
 	}
 }
 
-func (this *LuaRuntime) PCall(f string, args ...interface{}) {
-	l := this.lua
+func (rtm *LuaRuntime) PCall(f string, args ...interface{}) {
+	l := rtm.lua
 	l.Push(l.GetGlobal(f))
 	for _, arg := range args {
 		val := convertValue(l, arg)
@@ -169,8 +170,8 @@ func (this *LuaRuntime) PCall(f string, args ...interface{}) {
 	}
 }
 
-func (this *LuaRuntime) PCall2(f string, args ...LValue) {
-	l := this.lua
+func (rtm *LuaRuntime) PCall2(f string, args ...LValue) {
+	l := rtm.lua
 	l.Push(l.GetGlobal(f))
 	for _, arg := range args {
 		l.Push(arg)
@@ -180,8 +181,8 @@ func (this *LuaRuntime) PCall2(f string, args ...LValue) {
 	}
 }
 
-func (this *LuaRuntime) PCall3(f LValue, args ...LValue) {
-	l := this.lua
+func (rtm *LuaRuntime) PCall3(f LValue, args ...LValue) {
+	l := rtm.lua
 	l.Push(f)
 	for _, arg := range args {
 		l.Push(arg)
@@ -191,12 +192,12 @@ func (this *LuaRuntime) PCall3(f LValue, args ...LValue) {
 	}
 }
 
-func (this *LuaRuntime) GetGlobal(f string) LValue {
-	return this.lua.GetGlobal(f)
+func (rtm *LuaRuntime) GetGlobal(f string) LValue {
+	return rtm.lua.GetGlobal(f)
 }
 
-func (this *LuaRuntime) RegisterFunction(s string, f func(*lua.LState) int) {
-	l := this.lua
+func (rtm *LuaRuntime) RegisterFunction(s string, f func(*lua.LState) int) {
+	l := rtm.lua
 	l.SetGlobal(s, l.NewFunction(f))
 }
 
@@ -206,7 +207,7 @@ func Marshal(b []byte, lv lua.LValue) []byte {
 	case *lua.LNilType:
 		buffer = append(b, 'z')
 	case lua.LBool:
-		if v == true {
+		if v {
 			buffer = append(b, 't')
 		} else {
 			buffer = append(b, 'f')
@@ -337,7 +338,7 @@ func UnMarshal(b []byte, l *lua.LState) (lua.LValue, []byte) {
 		return lt, tb[1:]
 	default:
 		slog.LogError("lua", "error lua type %v", t)
-		panic("error lua type")
+		//panic("error lua type")
 	}
 	return lua.LNil, b
 }

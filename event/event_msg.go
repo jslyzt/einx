@@ -5,11 +5,13 @@ import (
 	"github.com/jslyzt/einx/component"
 )
 
-type Agent = agent.Agent
-type ProtoTypeID = agent.ProtoTypeID
-type Component = component.Component
-type ComponentID = component.ComponentID
-type EventType = int
+type (
+	Agent       = agent.Agent
+	ProtoTypeID = agent.ProtoTypeID
+	Component   = component.Component
+	ComponentID = component.ComponentID
+	EventType   = int
+)
 
 const (
 	EVENT_NONE EventType = iota

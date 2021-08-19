@@ -42,7 +42,7 @@ func CreateWorkers(name string, size int) WorkerPool {
 
 func GetWorkerPool(name string) WorkerPool {
 	v, ok := worker_pools_map.Load(name)
-	if ok == true {
+	if ok {
 		return v.(WorkerPool)
 	} else {
 		w := &ModuleWorkerPool{
@@ -55,38 +55,38 @@ func GetWorkerPool(name string) WorkerPool {
 	}
 }
 
-func (this *ModuleWorkerPool) Start() {
-	for _, m := range this.modules {
+func (pool *ModuleWorkerPool) Start() {
+	for _, m := range pool.modules {
 		go func(m Module) { m.(ModuleWoker).Run(&wait_close) }(m)
 	}
 }
 
-func (this *ModuleWorkerPool) ForEachModule(f func(m Module)) {
-	for _, v := range this.modules {
+func (pool *ModuleWorkerPool) ForEachModule(f func(m Module)) {
+	for _, v := range pool.modules {
 		f(v)
 	}
 }
 
-func (this *ModuleWorkerPool) Close() {
-	slog.LogInfo("worker_pool", "worker_pool [%v] will close.", this.name)
-	for _, v := range this.modules {
+func (pool *ModuleWorkerPool) Close() {
+	slog.LogInfo("worker_pool", "worker_pool [%v] will close.", pool.name)
+	for _, v := range pool.modules {
 		v.(ModuleWoker).Close()
 	}
 }
 
-func (this *ModuleWorkerPool) RegisterRpcHandler(name string, f RpcHandler) {
-	for _, v := range this.modules {
+func (pool *ModuleWorkerPool) RegisterRpcHandler(name string, f RpcHandler) {
+	for _, v := range pool.modules {
 		v.(ModuleRouter).RegisterRpcHandler(name, f)
 	}
 }
 
-func (this *ModuleWorkerPool) RegisterHandler(type_id ProtoTypeID, f MsgHandler) {
-	for _, v := range this.modules {
+func (pool *ModuleWorkerPool) RegisterHandler(type_id ProtoTypeID, f MsgHandler) {
+	for _, v := range pool.modules {
 		v.(ModuleRouter).RegisterHandler(type_id, f)
 	}
 }
 
-func (this *ModuleWorkerPool) RpcCall(name string, args ...interface{}) {
+func (pool *ModuleWorkerPool) RpcCall(name string, args ...interface{}) {
 	var hashkey uint32 = 0
 	length := len(name)
 	if length > 0 {
@@ -95,16 +95,16 @@ func (this *ModuleWorkerPool) RpcCall(name string, args ...interface{}) {
 		hashkey += uint32(name[(length-1)/2])
 		hashkey += uint32(length)
 	}
-	m := this.modules[hashkey%this.size] //route the rpc to worker by a simple hash key
+	m := pool.modules[hashkey%pool.size] //route the rpc to worker by a simple hash key
 	m.RpcCall(name, args...)
 }
 
-func (this *ModuleWorkerPool) Balancer() Module {
-	idx := atomic.AddUint32(&this.balance_id, 1) % this.size
-	return this.modules[idx]
+func (pool *ModuleWorkerPool) Balancer() Module {
+	idx := atomic.AddUint32(&pool.balance_id, 1) % pool.size
+	return pool.modules[idx]
 }
 
-func (this *ModuleWorkerPool) Const(n string) Module {
+func (pool *ModuleWorkerPool) Const(n string) Module {
 	var hashkey uint32 = 0
 	length := len(n)
 	if length > 0 {
@@ -113,9 +113,9 @@ func (this *ModuleWorkerPool) Const(n string) Module {
 		hashkey += uint32(n[(length-1)/2])
 		hashkey += uint32(length)
 	}
-	return this.modules[hashkey%this.size]
+	return pool.modules[hashkey%pool.size]
 }
 
-func (this *ModuleWorkerPool) Slot(n int) Module {
-	return this.modules[uint32(n)%this.size]
+func (pool *ModuleWorkerPool) Slot(n int) Module {
+	return pool.modules[uint32(n)%pool.size]
 }

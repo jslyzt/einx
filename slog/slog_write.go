@@ -28,8 +28,8 @@ type LogWriter struct {
 	dayTimer  *time.Timer
 }
 
-func (this *LogWriter) LogWrite(rec *LogRecord) {
-	this.rec <- rec
+func (lw *LogWriter) LogWrite(rec *LogRecord) {
+	lw.rec <- rec
 }
 
 var _log_writer = &LogWriter{
@@ -41,10 +41,10 @@ var _log_writer = &LogWriter{
 	b_init: 0,
 }
 
-func (this *LogWriter) writeFile(log *LogRecord) {
+func (lw *LogWriter) writeFile(log *LogRecord) {
 	file_writer, ok := _log_writer.filter[log.Name]
-	if ok == false {
-		path := path.Join(this.path, log.Name+".log")
+	if !ok {
+		path := path.Join(lw.path, log.Name+".log")
 		fd, err := os.OpenFile(path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0660)
 		if err != nil {
 			return
@@ -56,112 +56,112 @@ func (this *LogWriter) writeFile(log *LogRecord) {
 	file_writer.file.Write(_log_writer.buf)
 }
 
-func (this *LogWriter) writeStd(log *LogRecord) {
+func (lw *LogWriter) writeStd(log *LogRecord) {
 	os.Stdout.Write(_log_writer.buf)
 }
 
-func (this *LogWriter) InitPath(p string) {
-	if atomic.CompareAndSwapInt32(&this.b_init, 0, 1) == true {
-		this.init <- p
+func (lw *LogWriter) InitPath(p string) {
+	if atomic.CompareAndSwapInt32(&lw.b_init, 0, 1) {
+		lw.init <- p
 	}
 }
 
-func (this *LogWriter) MakePath() {
+func (lw *LogWriter) MakePath() {
 	ok := false
-	if file, err := os.Stat(this.path); err != nil {
+	if file, err := os.Stat(lw.path); err != nil {
 		ok = os.IsExist(err)
 	} else {
 		ok = file.IsDir()
 	}
 
-	if ok == false {
-		os.MkdirAll(this.path, 0x777)
+	if !ok {
+		os.MkdirAll(lw.path, 0x777)
 	}
 }
 
-func (this *LogWriter) MakeLogTimePath() {
+func (lw *LogWriter) MakeLogTimePath() {
 	now := time.Now()
 	dirName := fmt.Sprintf("%d-%02d-%02d",
 		now.Year(),
 		now.Month(),
 		now.Day())
 
-	this.path = path.Join(this.init_path, dirName)
+	lw.path = path.Join(lw.init_path, dirName)
 
-	this.MakePath()
+	lw.MakePath()
 	zero_time := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 	delayTime := 24*60*60 - (now.Unix() - zero_time.Unix())
 
-	if this.dayTimer == nil {
-		this.dayTimer = time.NewTimer(time.Duration(delayTime) * time.Second)
+	if lw.dayTimer == nil {
+		lw.dayTimer = time.NewTimer(time.Duration(delayTime) * time.Second)
 	} else {
-		this.dayTimer.Reset(time.Duration(delayTime) * time.Second)
+		lw.dayTimer.Reset(time.Duration(delayTime) * time.Second)
 	}
-	this.syncLog()
-	this.filter = make(map[string]*FileWriter)
+	lw.syncLog()
+	lw.filter = make(map[string]*FileWriter)
 }
 
-func (this *LogWriter) Run(b bool) {
-	defer this.Recover()
-	this.end_wait.Add(1)
-	defer this.end_wait.Done()
-	if b == true {
-		this.init_path = <-this.init
+func (lw *LogWriter) Run(b bool) {
+	defer lw.Recover()
+	lw.end_wait.Add(1)
+	defer lw.end_wait.Done()
+	if b {
+		lw.init_path = <-lw.init
 	}
-	this.MakeLogTimePath()
-	this.doRun()
+	lw.MakeLogTimePath()
+	lw.doRun()
 }
 
-func (this *LogWriter) doRun() {
+func (lw *LogWriter) doRun() {
 	var logRecord *LogRecord
 	var ok bool
 	for {
 		select {
-		case logRecord, ok = <-this.rec:
-		case <-this.dayTimer.C:
-			this.MakeLogTimePath()
+		case logRecord, ok = <-lw.rec:
+		case <-lw.dayTimer.C:
+			lw.MakeLogTimePath()
 			continue
 		}
-		if ok == false || logRecord == nil {
+		if !ok || logRecord == nil {
 			goto wait_close
 		}
-		this.buf = this.buf[:0]
+		lw.buf = lw.buf[:0]
 		//_log_writer.buf = append(_log_writer.buf, "\x1b[031m"...)
-		formatHeader(&this.buf, logRecord.Level, logRecord.Created)
-		this.buf = append(this.buf, logRecord.Message...)
+		formatHeader(&lw.buf, logRecord.Level, logRecord.Created)
+		lw.buf = append(lw.buf, logRecord.Message...)
 		//_log_writer.buf = append(_log_writer.buf, "\x1b[0m"...)
-		this.buf = append(this.buf, "\r\n"...)
+		lw.buf = append(lw.buf, "\r\n"...)
 
-		if logRecord.logfile == true {
-			this.writeFile(logRecord)
+		if logRecord.logfile {
+			lw.writeFile(logRecord)
 		}
 
 		if logRecord.Level == INFO || DebugLevel() == DEBUG {
-			this.writeStd(logRecord)
+			lw.writeStd(logRecord)
 		}
 
 		logRecord.Reset()
 		log_pool.Put(logRecord)
 	}
 wait_close:
-	this.DoClose()
+	lw.DoClose()
 }
 
-func (this *LogWriter) Recover() {
+func (lw *LogWriter) Recover() {
 	if r := recover(); r != nil {
 		LogError("log_manager", "log worker recover[%v]", r)
 		debug.PrintStack()
-		go this.Run(false)
+		go lw.Run(false)
 	}
 }
 
-func (this *LogWriter) syncLog() {
-	for _, filter := range this.filter {
+func (lw *LogWriter) syncLog() {
+	for _, filter := range lw.filter {
 		filter.file.Sync()
 		filter.file.Close()
 	}
 }
 
-func (this *LogWriter) DoClose() {
-	this.syncLog()
+func (lw *LogWriter) DoClose() {
+	lw.syncLog()
 }

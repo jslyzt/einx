@@ -44,74 +44,74 @@ func NewTcpServerMgr(opts ...Option) Component {
 	return tcpServer
 }
 
-func (this *TcpServerMgr) GetID() ComponentID {
-	return this.componentID
+func (mgr *TcpServerMgr) GetID() ComponentID {
+	return mgr.componentID
 }
 
-func (this *TcpServerMgr) GetType() ComponentType {
+func (mgr *TcpServerMgr) GetType() ComponentType {
 	return COMPONENT_TYPE_TCP_SERVER
 }
 
-func (this *TcpServerMgr) Address() net.Addr {
-	if this.listener == nil {
+func (mgr *TcpServerMgr) Address() net.Addr {
+	if mgr.listener == nil {
 		return nil
 	}
-	return this.listener.Addr()
+	return mgr.listener.Addr()
 }
 
-func (this *TcpServerMgr) Start() bool {
-	listener, err := net.Listen("tcp", this.addr)
+func (mgr *TcpServerMgr) Start() bool {
+	listener, err := net.Listen("tcp", mgr.addr)
 	if err != nil {
-		slog.LogError("tcp_server", "ListenTCP addr:[%s],Error:%s", this.addr, err.Error())
+		slog.LogError("tcp_server", "ListenTCP addr:[%s],Error:%s", mgr.addr, err.Error())
 		return false
 	}
-	this.listener = listener
-	go this.doTcpAccept()
+	mgr.listener = listener
+	go mgr.doTcpAccept()
 	return true
 }
 
-func (this *TcpServerMgr) Close() {
-	if atomic.CompareAndSwapInt32(&this.closeFlag, 0, 1) == true {
-		if this.listener == nil {
+func (mgr *TcpServerMgr) Close() {
+	if atomic.CompareAndSwapInt32(&mgr.closeFlag, 0, 1) {
+		if mgr.listener == nil {
 			return
 		}
-		_ = this.listener.Close()
+		_ = mgr.listener.Close()
 	}
 }
 
-func (this *TcpServerMgr) isRunning() bool {
-	close_flag := atomic.LoadInt32(&this.closeFlag)
+func (mgr *TcpServerMgr) isRunning() bool {
+	close_flag := atomic.LoadInt32(&mgr.closeFlag)
 	return close_flag == 0
 }
 
-func (this *TcpServerMgr) doTcpAccept() {
-	m := this.module
-	h := this.agentHandler
-	listener := this.listener
+func (mgr *TcpServerMgr) doTcpAccept() {
+	m := mgr.module
+	h := mgr.agentHandler
+	listener := mgr.listener
 
-	for this.isRunning() {
+	for mgr.isRunning() {
 		rawConn, err := listener.Accept()
 		if err != nil {
 			if ne, ok := err.(net.Error); ok && ne.Temporary() {
 				time.Sleep(TCP_ACCEPT_SLEEP)
-			} else if this.isRunning() {
+			} else if mgr.isRunning() {
 				slog.LogError("tcp_server", "Accept Error: %v", err)
 			}
 			continue
 		}
 
-		tcpAgent := newTcpConn(rawConn, h, Linker_TCP_InComming, &this.option)
-		m.PostEvent(event.EVENT_TCP_ACCEPTED, tcpAgent, this.componentID)
+		tcpAgent := newTcpConn(rawConn, h, Linker_TCP_InComming, &mgr.option)
+		m.PostEvent(event.EVENT_TCP_ACCEPTED, tcpAgent, mgr.componentID)
 
 		go func() {
 			pingMgr.AddPing(tcpAgent)
 			err := tcpAgent.Run()
 			pingMgr.RemovePing(tcpAgent)
-			m.PostEvent(event.EVENT_TCP_CLOSED, tcpAgent, this.componentID, err)
+			m.PostEvent(event.EVENT_TCP_CLOSED, tcpAgent, mgr.componentID, err)
 		}()
 	}
 }
 
-func (this *TcpServerMgr) GetOption() *TransportOption {
-	return &this.option
+func (mgr *TcpServerMgr) GetOption() *TransportOption {
+	return &mgr.option
 }

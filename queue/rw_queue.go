@@ -31,7 +31,7 @@ func (q *RWQueue) init() {
 
 func (q *RWQueue) exchange() bool {
 	temp_queue := q.writeQueue
-	if temp_queue.empty() == true {
+	if temp_queue.empty() {
 		return false
 	}
 	q.writeQueue = q.readQueue
@@ -48,9 +48,9 @@ func (q *RWQueue) Push(event interface{}) {
 func (q *RWQueue) Get(event_list []interface{}, count uint32) (uint32, int) {
 	q.readLock.Lock()
 
-	if q.readQueue.empty() == true {
+	if q.readQueue.empty() {
 		q.writeLock.Lock()
-		if q.exchange() == false {
+		if !q.exchange() {
 			q.writeLock.Unlock()
 			q.readLock.Unlock()
 			return 0, 0
@@ -63,7 +63,7 @@ func (q *RWQueue) Get(event_list []interface{}, count uint32) (uint32, int) {
 	var leftCount int = 0
 	for {
 		val, ret := readQueue.pop()
-		if ret == false {
+		if !ret {
 			break
 		}
 		event_list[readCount] = val
@@ -81,9 +81,9 @@ func (q *RWQueue) GetOne() interface{} {
 	q.readLock.Lock()
 	defer q.readLock.Unlock()
 
-	if q.readQueue.empty() == true {
+	if q.readQueue.empty() {
 		q.writeLock.Lock()
-		if q.exchange() == false {
+		if !q.exchange() {
 			q.writeLock.Unlock()
 			return 0
 		}
@@ -92,7 +92,7 @@ func (q *RWQueue) GetOne() interface{} {
 
 	readQueue := q.readQueue
 	val, ret := readQueue.pop()
-	if ret == false {
+	if !ret {
 		return nil
 	}
 	return val

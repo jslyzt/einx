@@ -4,14 +4,16 @@ import (
 	"sync/atomic"
 )
 
-type AgentID = uint64
-type ProtoTypeID = uint32
-type EventType = int
+type (
+	AgentID     = uint64
+	ProtoTypeID = uint32
+	EventType   = int
 
-type Agent interface {
-	GetID() AgentID
-	Close()
-}
+	Agent interface {
+		GetID() AgentID
+		Close()
+	}
+)
 
 var agent_id uint64 = 0
 

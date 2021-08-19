@@ -39,54 +39,54 @@ func NewTcpClientMgr(opts ...Option) Component {
 	return tcp_client
 }
 
-func (this *TcpClientMgr) GetID() ComponentID {
-	return this.component_id
+func (mgr *TcpClientMgr) GetID() ComponentID {
+	return mgr.component_id
 }
 
-func (this *TcpClientMgr) GetType() ComponentType {
+func (mgr *TcpClientMgr) GetType() ComponentType {
 	return COMPONENT_TYPE_TCP_CLIENT
 }
 
-func (this *TcpClientMgr) Start() bool {
+func (mgr *TcpClientMgr) Start() bool {
 	return true
 }
 
-func (this *TcpClientMgr) Close() {
+func (mgr *TcpClientMgr) Close() {
 
 }
 
-func (this *TcpClientMgr) Connect(addr string, user_type interface{}) {
-	go this.connect(addr, user_type)
+func (mgr *TcpClientMgr) Connect(addr string, user_type interface{}) {
+	go mgr.connect(addr, user_type)
 }
 
-func (this *TcpClientMgr) connect(addr string, user_type interface{}) {
+func (mgr *TcpClientMgr) connect(addr string, user_type interface{}) {
 	raw_conn, err := net.Dial("tcp", addr)
 	if err != nil {
 		slog.LogWarning("tcp_client", "tcp connect failed %v", err)
 		e := &event.ComponentEventMsg{}
 		e.MsgType = event.EVENT_COMPONENT_ERROR
-		e.Sender = this
+		e.Sender = mgr
 		e.Attach = user_type
 		e.Err = err
-		this.module.PushEventMsg(e)
+		mgr.module.PushEventMsg(e)
 		return
 	}
 
-	m := this.module
-	h := this.agent_handler
+	m := mgr.module
+	h := mgr.agent_handler
 
-	tcp_agent := newTcpConn(raw_conn, h, Linker_TCP_OutGoing, &this.option)
+	tcp_agent := newTcpConn(raw_conn, h, Linker_TCP_OutGoing, &mgr.option)
 	tcp_agent.SetUserType(user_type)
-	m.PostEvent(event.EVENT_TCP_CONNECTED, tcp_agent, this.component_id)
+	m.PostEvent(event.EVENT_TCP_CONNECTED, tcp_agent, mgr.component_id)
 
 	go func() {
 		pingMgr.AddPing(tcp_agent)
 		err := tcp_agent.Run()
 		pingMgr.RemovePing(tcp_agent)
-		m.PostEvent(event.EVENT_TCP_CLOSED, tcp_agent, this.component_id, err)
+		m.PostEvent(event.EVENT_TCP_CLOSED, tcp_agent, mgr.component_id, err)
 	}()
 }
 
-func (this *TcpClientMgr) GetOption() *TransportOption {
-	return &this.option
+func (mgr *TcpClientMgr) GetOption() *TransportOption {
+	return &mgr.option
 }

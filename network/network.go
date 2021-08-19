@@ -97,7 +97,7 @@ func (m *TransportMultiple) GetType() byte {
 }
 
 func (m *TransportMultiple) WriteMsg(msgID ProtoTypeID, b []byte) bool {
-	if m.trans.IsClosed() == true {
+	if m.trans.IsClosed() {
 		return false
 	}
 
@@ -111,7 +111,7 @@ func (m *TransportMultiple) WriteMsg(msgID ProtoTypeID, b []byte) bool {
 }
 
 func (m *TransportMultiple) RpcCall(msgiD ProtoTypeID, b []byte) bool {
-	if m.trans.IsClosed() == true {
+	if m.trans.IsClosed() {
 		return false
 	}
 
@@ -125,7 +125,7 @@ func (m *TransportMultiple) RpcCall(msgiD ProtoTypeID, b []byte) bool {
 }
 
 func (m *TransportMultiple) Done() bool {
-	if m.trans.IsClosed() == true {
+	if m.trans.IsClosed() {
 		return false
 	}
 	m.trans.doPushWrite(m)

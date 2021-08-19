@@ -44,7 +44,7 @@ var osFuncs = map[string]lua.LGFunction{
 }
 
 func osClock(L *lua.LState) int {
-	L.Push(lua.LNumber(float64(time.Now().Sub(start_tick)) / float64(time.Second)))
+	L.Push(lua.LNumber(float64(time.Since(start_tick)) / float64(time.Second)))
 	return 1
 }
 
@@ -125,7 +125,7 @@ func luaUnMarshal(L *lua.LState) int {
 
 	s := L.CheckUserData(1)
 	b := s.Value.([]byte)
-	if b == nil || len(b) == 0 {
+	if len(b) == 0 {
 		L.Push(L.NewTable())
 		return 1
 	}

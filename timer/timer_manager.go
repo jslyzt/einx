@@ -16,7 +16,7 @@ var beginTime = time.Now()
 
 func UnixTS() uint64 {
 	tick := time.Since(beginTime).Nanoseconds()
-	return uint64(tick/1e6)
+	return uint64(tick / 1e6)
 }
 
 func NewTimerManager() *TimerManager {
@@ -48,28 +48,23 @@ func NewTimerManager() *TimerManager {
 	return m
 }
 
-func (this *TimerManager) GetSeqID() uint32 {
-	this.seqIDIndex++
-	if this.seqIDIndex == 0 || this.seqIDIndex >= 0xffffff {
-		this.seqIDIndex = 1
+func (mgr *TimerManager) GetSeqID() uint32 {
+	mgr.seqIDIndex++
+	if mgr.seqIDIndex == 0 || mgr.seqIDIndex >= 0xffffff {
+		mgr.seqIDIndex = 1
 	}
-	return this.seqIDIndex
+	return mgr.seqIDIndex
 }
 
-func (this *TimerManager) AddTimer(delay uint64, op TimerHandler, args ...interface{}) uint64 {
-	seqID := this.GetSeqID()
-
-	if delay < 0 {
-		delay = 0
-	}
-
+func (mgr *TimerManager) AddTimer(delay uint64, op TimerHandler, args ...interface{}) uint64 {
+	seqID := mgr.GetSeqID()
 	run_tick := UnixTS() + delay
 
 	if run_tick > 0x000000ffffffffff {
 		run_tick = run_tick & 0x000000ffffffffff
 	}
 
-	xtimer := this.pool.Get()
+	xtimer := mgr.pool.Get()
 	xtimer.args = args
 	xtimer.handler = op
 	xtimer.next = nil
@@ -77,21 +72,21 @@ func (this *TimerManager) AddTimer(delay uint64, op TimerHandler, args ...interf
 	xtimer.seqID = seqID
 	xtimer.runTick = run_tick
 
-	this.timer_wheels[4].add_timer(xtimer)
+	mgr.timer_wheels[4].add_timer(xtimer)
 
 	return xtimer.getTimerId()
 }
 
-func (this *TimerManager) DeleteTimer(timerID uint64) bool {
+func (mgr *TimerManager) DeleteTimer(timerID uint64) bool {
 	if timerID == 0 {
 		return false
 	}
-	return this.timer_wheels[4].delete_timer(timerID>>24, uint32(timerID&0xffffff))
+	return mgr.timer_wheels[4].delete_timer(timerID>>24, uint32(timerID&0xffffff))
 }
 
-func (this *TimerManager) Execute(count uint32) int {
+func (mgr *TimerManager) Execute(count uint32) int {
 	now := UnixTS()
-	wheel := this.timer_wheels[0]
+	wheel := mgr.timer_wheels[0]
 	wheel.execute(now, count)
 	return wheel.nextWake()
 }

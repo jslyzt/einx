@@ -13,7 +13,7 @@ func RpcMarshal(b []byte, val interface{}) []byte {
 	case nil:
 		buffer = append(b, 'z')
 	case bool:
-		if v == true {
+		if v {
 			buffer = append(b, 't')
 		} else {
 			buffer = append(b, 'f')
@@ -192,7 +192,7 @@ func RpcUnMarshal(b []byte) (interface{}, []byte) {
 		return lt, tb[1:]
 	default:
 		slog.LogError("rpc_unmarshal", "error rpc type %v", t)
-		panic("error rpc type")
+		//panic("error rpc type")
 	}
 	return nil, b
 }

@@ -56,7 +56,7 @@ func NewModule(name string) Module {
 func GetModule(name string) Module {
 	var m Module
 	v, ok := module_map.Load(name)
-	if ok == false {
+	if !ok {
 		m = NewModule(name)
 		module_map.Store(name, m)
 	} else {
@@ -68,7 +68,7 @@ func GetModule(name string) Module {
 func FindModule(name string) Module {
 	var m Module
 	v, ok := module_map.Load(name)
-	if ok == true {
+	if ok {
 		m = v.(Module)
 		return m
 	}

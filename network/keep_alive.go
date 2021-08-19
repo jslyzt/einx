@@ -20,17 +20,17 @@ type PingEventMsg struct {
 	Tick   int64
 }
 
-func (this *PingEventMsg) GetType() event.EventType {
+func (msg *PingEventMsg) GetType() event.EventType {
 	return 0
 }
 
-func (this *PingEventMsg) GetSender() Agent {
+func (msg *PingEventMsg) GetSender() Agent {
 	return nil
 }
 
-func (this *PingEventMsg) Reset() {
-	this.Sender = nil
-	this.Op = 0
+func (msg *PingEventMsg) Reset() {
+	msg.Sender = nil
+	msg.Op = 0
 }
 
 const (
@@ -75,7 +75,7 @@ func UnixTS() int64 {
 
 func (p *PingMgr) OnPing(args []interface{}) {
 	linker := args[0].(Linker)
-	if linker.Ping() == true {
+	if linker.Ping() {
 		timer_id := p.timer_manager.AddTimer(uint64(linker.GetOption().ping_time), p.OnPing, linker)
 		p.linkers[linker] = timer_id
 	} else {
@@ -84,7 +84,7 @@ func (p *PingMgr) OnPing(args []interface{}) {
 }
 
 func (p *PingMgr) AddPing(linker Linker) {
-	if linker.GetOption().enable_ping == false {
+	if !linker.GetOption().enable_ping {
 		return
 	}
 	event_msg := p.event_pool.Get().(*PingEventMsg)
@@ -141,7 +141,7 @@ func (p *PingMgr) Run() {
 
 		timer_manager.Execute(256)
 
-		if ev_queue.WaitNotify() == false {
+		if !ev_queue.WaitNotify() {
 			continue
 		}
 
@@ -161,7 +161,7 @@ func (p *PingMgr) handle_event(e *PingEventMsg) {
 		timer_id := p.timer_manager.AddTimer(uint64(linker.GetOption().ping_time), p.OnPing, linker)
 		p.linkers[linker] = timer_id
 	case PING_OP_TYPE_REMOVE_PING:
-		if timer_id, ok := p.linkers[linker]; ok == true {
+		if timer_id, ok := p.linkers[linker]; ok {
 			delete(p.linkers, linker)
 			p.timer_manager.DeleteTimer(timer_id)
 		}

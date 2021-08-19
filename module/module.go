@@ -155,7 +155,7 @@ func (m *module) RouterRpc(agent Agent, name string, args []interface{}) {
 
 func (m *module) RegisterHandler(typeID ProtoTypeID, handler MsgHandler) {
 	_, ok := m.msgHandlerMap[typeID]
-	if ok == true {
+	if ok {
 		slog.LogWarning("module", "MsgID[%d] has been registered", typeID)
 		return
 	}
@@ -164,7 +164,7 @@ func (m *module) RegisterHandler(typeID ProtoTypeID, handler MsgHandler) {
 
 func (m *module) RegisterRpcHandler(rpcName string, handler RpcHandler) {
 	_, ok := m.rpcHandlerMap[rpcName]
-	if ok == true {
+	if ok {
 		slog.LogWarning("module", "Rpc[%s] has been registered", rpcName)
 		return
 	}
@@ -216,14 +216,14 @@ func (m *module) Run(wait *sync.WaitGroup) {
 			}
 		}
 
-		if evQueue.WaitNotify() == false {
+		if !evQueue.WaitNotify() {
 			continue
 		}
 
 		timerTick.Reset(time.Duration(nextWake) * time.Millisecond)
 		select {
 		case closeFlag = <-m.closeChan:
-			if closeFlag == true {
+			if closeFlag {
 				goto runClose
 			}
 		case <-eventChan:
@@ -244,7 +244,7 @@ func (m *module) doClose(wait *sync.WaitGroup) {
 	for _, a := range m.agentMap {
 		a.Close()
 	}
-	if PerfomancePrint == true {
+	if PerfomancePrint {
 		elaspTime := time.Now().UnixNano()/1e9 - m.beginTime
 		slog.LogError("perfomance", "module perfomance [%s] %d %d %d", m.name, elaspTime, m.opCount, m.opCount/elaspTime)
 	}
@@ -279,7 +279,7 @@ func (m *module) handleEvent(eventMsg EventMsg) {
 func (m *module) handleDataEvent(eventMsg EventMsg) {
 	dataEventMsg := eventMsg.(*DataEventMsg)
 	handler, ok := m.msgHandlerMap[dataEventMsg.TypeID]
-	if ok == true {
+	if ok {
 		ctx := m.context
 		ctx.s = dataEventMsg.Sender
 		handler(ctx, dataEventMsg.MsgData)
@@ -294,7 +294,7 @@ func (m *module) handleDataEvent(eventMsg EventMsg) {
 func (m *module) handleComponentEvent(eventMsg EventMsg) {
 	comEvent := eventMsg.(*ComponentEventMsg)
 	c := comEvent.Sender
-	if _, ok := m.componentMap[c.GetID()]; ok == true {
+	if _, ok := m.componentMap[c.GetID()]; ok {
 		slog.LogError("pakage", "module[%v] register pakage[%v]", m.name, c.GetID())
 		return
 	}
@@ -310,7 +310,7 @@ func (m *module) handleComponentEvent(eventMsg EventMsg) {
 func (m *module) handleComponentError(eventMsg EventMsg) {
 	comEvent := eventMsg.(*ComponentEventMsg)
 	c := comEvent.Sender
-	if mgr, ok := m.commgrMap[c.GetID()]; ok == true {
+	if mgr, ok := m.commgrMap[c.GetID()]; ok {
 		ctx := m.context
 		ctx.c = c
 		ctx.t = comEvent.Attach
@@ -323,10 +323,10 @@ func (m *module) handleComponentError(eventMsg EventMsg) {
 
 func (m *module) handleAgentEnter(eventMsg EventMsg) {
 	s := eventMsg.(*SessionEventMsg)
-	a := s.Sender.(Agent)
+	a := s.Sender
 	m.agentMap[a.GetID()] = a
 
-	if sesMgr, ok := m.commgrMap[s.Cid]; ok == true {
+	if sesMgr, ok := m.commgrMap[s.Cid]; ok {
 		sesMgr.(SessionMgr).OnLinkerConnected(a.GetID(), a)
 		return
 	}
@@ -336,9 +336,9 @@ func (m *module) handleAgentEnter(eventMsg EventMsg) {
 
 func (m *module) handleAgentClosed(eventMsg EventMsg) {
 	s := eventMsg.(*SessionEventMsg)
-	sender := s.Sender.(Agent)
+	sender := s.Sender
 	delete(m.agentMap, sender.GetID())
-	if sesMgr, ok := m.commgrMap[s.Cid]; ok == true {
+	if sesMgr, ok := m.commgrMap[s.Cid]; ok {
 		var err error = nil
 		if len(s.Args) > 0 {
 			err, _ = s.Args[0].(error)
@@ -352,7 +352,7 @@ func (m *module) handleAgentClosed(eventMsg EventMsg) {
 
 func (m *module) handleRpc(eventMsg EventMsg) {
 	rpcMsg := eventMsg.(*RpcEventMsg)
-	if handler, ok := m.rpcHandlerMap[rpcMsg.RpcName]; ok == true {
+	if handler, ok := m.rpcHandlerMap[rpcMsg.RpcName]; ok {
 		ctx := m.context
 		args := &m.args
 		ctx.s = rpcMsg.Sender
@@ -369,7 +369,7 @@ func (m *module) handleRpc(eventMsg EventMsg) {
 
 func (m *module) handleAwaitRpc(eventMsg EventMsg) {
 	rpcMsg := eventMsg.(*AwaitRpcEventMsg)
-	if handler, ok := m.rpcHandlerMap[rpcMsg.RpcName]; ok == true {
+	if handler, ok := m.rpcHandlerMap[rpcMsg.RpcName]; ok {
 		ctx := &ModuleContext{}
 		args := &m.args
 		ctx.s = rpcMsg.Sender

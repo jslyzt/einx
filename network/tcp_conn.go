@@ -92,7 +92,7 @@ func (n *TcpConn) MultipleMsg() ITranMsgMultiple {
 var writePool *sync.Pool = &sync.Pool{New: func() interface{} { return new(TransportMsgPack) }}
 
 func (n *TcpConn) WriteMsg(msgID ProtoTypeID, b []byte) bool {
-	if n.IsClosed() == true {
+	if n.IsClosed() {
 		return false
 	}
 
@@ -105,7 +105,7 @@ func (n *TcpConn) WriteMsg(msgID ProtoTypeID, b []byte) bool {
 }
 
 func (n *TcpConn) RpcCall(msgID ProtoTypeID, b []byte) bool {
-	if n.IsClosed() == true {
+	if n.IsClosed() {
 		return false
 	}
 
@@ -126,7 +126,7 @@ func (n *TcpConn) RemoteAddr() net.Addr {
 }
 
 func (n *TcpConn) Close() {
-	if atomic.CompareAndSwapUint32(&n.closeFlag, 0, 1) == true {
+	if atomic.CompareAndSwapUint32(&n.closeFlag, 0, 1) {
 		n.doPushWrite(nil)
 	}
 }
@@ -142,20 +142,20 @@ func (n *TcpConn) Run() error {
 
 	go func() {
 		defer n.recover()
-		if n.Write() == false {
+		if !n.Write() {
 			n.Close()
 			n.Destroy()
 		}
 	}()
 
-	if n.Recv() == false {
+	if !n.Recv() {
 		return errors.New("tcp transport recv error")
 	}
 	return nil
 }
 
 func (n *TcpConn) Pong(nowTick int64) {
-	if n.IsClosed() == true {
+	if n.IsClosed() {
 		return
 	}
 
@@ -173,7 +173,7 @@ func (n *TcpConn) DoPong(nowTick int64) {
 }
 
 func (n *TcpConn) Ping() bool {
-	if n.IsClosed() == true {
+	if n.IsClosed() {
 		return false
 	}
 

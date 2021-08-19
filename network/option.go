@@ -79,7 +79,7 @@ func ServeHandler(serve_handler SessionHandler) Option {
 
 func TransportMaxCount(c int) Option {
 	return func(args ...interface{}) {
-		if t, ok := args[0].(OptionMgr); ok == true {
+		if t, ok := args[0].(OptionMgr); ok {
 			t.GetOption().msg_max_count = int32(c)
 		} else {
 			panic("option network transport keep alive unknown type")
@@ -89,7 +89,7 @@ func TransportMaxCount(c int) Option {
 
 func TransportMaxLength(c int) Option {
 	return func(args ...interface{}) {
-		if t, ok := args[0].(OptionMgr); ok == true {
+		if t, ok := args[0].(OptionMgr); ok {
 			t.GetOption().msg_max_length = uint32(c)
 		} else {
 			panic("option network transport keep alive unknown type")
@@ -97,10 +97,9 @@ func TransportMaxLength(c int) Option {
 	}
 }
 
-
 func TransportKeepAlive(e bool, c int64) Option {
 	return func(args ...interface{}) {
-		if t, ok := args[0].(OptionMgr); ok == true {
+		if t, ok := args[0].(OptionMgr); ok {
 			t.GetOption().ping_time = c
 			t.GetOption().enable_ping = e
 		} else {

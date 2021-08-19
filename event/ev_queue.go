@@ -6,15 +6,17 @@ import (
 	"github.com/jslyzt/einx/queue"
 )
 
-type EventChan chan bool
-type EventQueue struct {
-	ev_queue *queue.RWQueue
-	ev_cond  EventChan
+type (
+	EventChan  chan bool
+	EventQueue struct {
+		ev_queue *queue.RWQueue
+		ev_cond  EventChan
 
-	w uint32
-	n uint32
-	q int32
-}
+		w uint32
+		n uint32
+		q int32
+	}
+)
 
 func NewEventQueue() *EventQueue {
 	q := &EventQueue{
@@ -32,7 +34,7 @@ func (q *EventQueue) Push(event EventMsg) {
 	q.ev_queue.Push(event)
 	atomic.AddInt32(&q.q, 1)
 
-	if q.notify_one() == true {
+	if q.notify_one() {
 		select {
 		case q.ev_cond <- true:
 		default:
@@ -74,6 +76,6 @@ func (q *EventQueue) WaiterWake() {
 	q.notify_one()
 }
 
-func (q *EventQueue) count() int {
+func (q *EventQueue) Count() int {
 	return int(atomic.LoadInt32(&q.q))
 }

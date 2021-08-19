@@ -10,16 +10,20 @@ import (
 	"github.com/jslyzt/einx/slog"
 )
 
-type EventReceiver = event.EventReceiver
+// 类型定义
+type (
+	EventReceiver = event.EventReceiver
 
-type MysqlMgr struct {
-	session      *sql.DB
-	timeout      time.Duration
-	dbcfg        *MysqlConnInfo
-	component_id component.ComponentID
-	m            EventReceiver
-}
+	MysqlMgr struct {
+		session      *sql.DB
+		timeout      time.Duration
+		dbcfg        *MysqlConnInfo
+		component_id component.ComponentID
+		m            EventReceiver
+	}
+)
 
+// NewMysqlMgr 新建
 func NewMysqlMgr(m module.Module, dbcfg *MysqlConnInfo, timeout time.Duration) *MysqlMgr {
 	return &MysqlMgr{
 		session:      nil,
@@ -30,58 +34,58 @@ func NewMysqlMgr(m module.Module, dbcfg *MysqlConnInfo, timeout time.Duration) *
 	}
 }
 
-func (this *MysqlMgr) GetID() component.ComponentID {
-	return this.component_id
+func (mgr *MysqlMgr) GetID() component.ComponentID {
+	return mgr.component_id
 }
 
-func (this *MysqlMgr) GetType() component.ComponentType {
+func (mgr *MysqlMgr) GetType() component.ComponentType {
 	return component.COMPONENT_TYPE_DB_MYSQL
 }
 
-func (this *MysqlMgr) Start() bool {
+func (mgr *MysqlMgr) Start() bool {
 	var err error
-	this.session, err = sql.Open("mysql", this.dbcfg.String())
+	mgr.session, err = sql.Open("mysql", mgr.dbcfg.String())
 	if err != nil {
 		e := &event.ComponentEventMsg{}
 		e.MsgType = event.EVENT_COMPONENT_ERROR
-		e.Sender = this
+		e.Sender = mgr
 		e.Attach = err
-		this.m.PushEventMsg(e)
+		mgr.m.PushEventMsg(e)
 		slog.LogInfo("mysql", "mysql connect failed.")
 		return false
 	}
 	return true
 }
 
-func (this *MysqlMgr) Close() {
-	if this.session != nil {
-		this.session.Close()
-		this.session = nil
+func (mgr *MysqlMgr) Close() {
+	if mgr.session != nil {
+		mgr.session.Close()
+		mgr.session = nil
 		slog.LogInfo("mysql", "mysql disconnect")
 	}
 }
 
-func (this *MysqlMgr) Ping() error {
-	if this.session != nil {
-		return this.session.Ping()
+func (mgr *MysqlMgr) Ping() error {
+	if mgr.session != nil {
+		return mgr.session.Ping()
 	}
-	return MYSQL_SESSION_NIL_ERR
+	return ErrSessionNil
 }
 
-func (this *MysqlMgr) GetSession() *sql.DB {
-	return this.session
+func (mgr *MysqlMgr) GetSession() *sql.DB {
+	return mgr.session
 }
 
-func (this *MysqlMgr) GetNamedRows(query interface{}) ([]map[string]interface{}, error) {
+func (mgr *MysqlMgr) GetNamedRows(query interface{}) ([]map[string]interface{}, error) {
 	return GetNamedRows(query)
 }
 
 func GetNamedRows(query interface{}) ([]map[string]interface{}, error) {
 	row, ok := query.(*sql.Rows)
-	var results []map[string]interface{}
-	if ok == false {
-		return results, MYSQL_GET_NAMED_RESULT_ERROR
+	if !ok {
+		return nil, ErrGetNamedResult
 	}
+	var results []map[string]interface{}
 	column_types, err := row.ColumnTypes()
 	if err != nil {
 		slog.LogError("mysql", "columns error:%v", err)

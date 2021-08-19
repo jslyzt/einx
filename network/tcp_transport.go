@@ -25,6 +25,10 @@ var bigEndian = binary.BigEndian
 // --------------------------------------------------------------------------------------------------------
 var msgHeaderLength int = MSG_HEADER_LENGTH
 
+var (
+	ErrMsgTooLong = errors.New("msg packet length too long")
+)
+
 type transPacket struct {
 	MsgType    byte
 	BodyLength uint16
@@ -45,7 +49,7 @@ func (n *tcpTransport) Write() bool {
 				goto writeClose
 			}
 			wg := m.(ITransportMsg)
-			if n.WriteMsgPacket(tcpConn, wg) == false {
+			if !n.WriteMsgPacket(tcpConn, wg) {
 				goto writeClose
 			}
 			msgList[i] = nil
@@ -73,10 +77,7 @@ func (n *tcpTransport) WriteMsgPacket(conn net.Conn, msg ITransportMsg) bool {
 	buf := n.writeBuf
 	rb := buf.ReadBuf(buf.Count())
 	_, err := conn.Write(rb)
-	if err == nil {
-		return true
-	}
-	return false
+	return err == nil
 }
 
 func (n *tcpTransport) packMsgBuf(msg *TransportMsgPack) {
@@ -164,7 +165,7 @@ func (n *tcpTransport) ReadMsgPacket(conn net.Conn) (ProtoTypeID, []byte, error)
 	}
 
 	if uint32(msgPacket.BodyLength) >= n.option.msg_max_length {
-		return 0, nil, errors.New("msg packet length too long.")
+		return 0, nil, ErrMsgTooLong
 	}
 
 	buf.Reserve(int(msgPacket.BodyLength))
